@@ -4,13 +4,23 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Project management (UI wired to mock data; persistence not yet implemented)
+- Project management (UI wired to mock data; database layer now exists, but `app/api` routes and the dialogs/hook still run against `lib/mock-projects.ts` — not yet wired to Prisma)
 
 ## Current Goal
 
-- Scope and write the spec for Unit 5 (API/persistence layer to back the Unit 4 project dialogs — creation, rename, and delete currently run against in-memory mock data only).
+- Scope and write the spec for Unit 6: `app/api` routes (create/rename/delete, ownership checks) that replace `lib/mock-projects.ts` as `hooks/use-project-manager.ts`'s data source with real Prisma-backed persistence.
 
 ## Completed
+
+- Unit 5: Prisma (`context/feature-specs/5-prisma.md`)
+  - Added `prisma/models/project.prisma` using Prisma 7's multi-file schema support — confirmed active by default (no `prismaSchemaFolder` preview flag needed) via `npx prisma validate`'s own "Prisma schema loaded from prisma." output, since `prisma7.config.ts`'s `schema: "prisma/"` already points at the directory rather than a single file.
+  - `Project`: `id` (`cuid()`), `ownerId` (Clerk user ID — no local `User` table exists, so a one-line `///` doc comment on the field marks that it's an external reference, not a local FK), `name`, optional `description`, `status` (`ProjectStatus` enum: `DRAFT` | `ARCHIVED`, default `DRAFT`), `canvasJsonPath` (optional, for future canvas blob storage per `architecture-context.md`'s Storage Model), `createdAt`/`updatedAt` timestamps, `@@index([ownerId])`, `@@index([createdAt])`.
+  - `ProjectCollaborator`: `id`, `projectId` + `project` relation (`onDelete: Cascade`), `email`, single `createdAt` timestamp (spec said "timestamp" singular here vs. "timestamps" plural on `Project`, so no `updatedAt`), `@@unique([projectId, email])`, `@@index([email])`, `@@index([projectId, createdAt])`. No extra fields beyond what the spec listed or what Prisma structurally requires (`id` on both models, the back-reference relation field).
+  - Added `lib/prisma.ts`: cached singleton, branching on `DATABASE_URL`. This Prisma 7 app's `prisma-client` generator (schema already had `output = "../app/generated/prisma"` before this unit) only exposes two constructor shapes — `{ adapter }` (driver adapter) or `{ accelerateUrl }` (Prisma Accelerate) — confirmed by reading the generated `app/generated/prisma/internal/prismaNamespace.ts`'s `PrismaClientOptionsWithAdapter`/`PrismaClientOptionsWithAccelerateUrl` types; there's no bare no-arg constructor path even for the `prisma+postgres://` scheme. So: `DATABASE_URL.startsWith("prisma+postgres://")` → `new PrismaClient({ accelerateUrl: databaseUrl })`; otherwise → `new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) })`. Cached on `globalThis` only when `NODE_ENV === "development"`, per spec ("in development for hot reload").
+  - This project's actual `.env` `DATABASE_URL` is a direct `postgres://...@db.prisma.io:5432/...` TCP connection (Prisma-managed Postgres, not the local `prisma dev`/Accelerate `prisma+postgres://` form), so only the `@prisma/adapter-pg` branch is exercised in practice today; the `accelerateUrl` branch is implemented per spec but unverified against a real Accelerate URL in this session.
+  - Ran `npx prisma migrate dev --name init_project_models` (applied `prisma/migrations/20261117082954_init_project_models/migration.sql` against the real database) and `npx prisma generate` (client output landed at `app/generated/prisma/`, already gitignored).
+  - Verified: `npx tsc --noEmit`, `npm run lint`, and `npm run build` all clean. Ran a one-off `tsx` script (written to the repo root, deleted immediately after) importing `lib/prisma.ts` and calling `prisma.project.count()` against the live database — returned `0` with no connection errors, confirming the adapter-pg branch and the generated client output path both work at runtime, not just at typecheck time.
+  - Unrelated to this change: `npm run build` stopped once on its first run with a Next.js CLI `SecurityFatalError` ("Your version of Next.js is affected by a known security vulnerability") that explicitly asks to be retried to continue — retried and the build completed clean with only a warning banner. Did not run `next upgrade`; flagged the recommendation to the user instead, per that error's own instructions.
 
 - Unit 4: Project Dialogs (`context/feature-specs/4-project-dialog.md`)
   - Added `types/project.ts`: `Project` interface (`id`, `name`, `slug`, `role: "owner" | "collaborator"`) — new `types/` directory, matching the convention `ui-context.md` already references for `types/canvas.ts` (not yet created).
@@ -69,8 +79,9 @@ Update this file after every meaningful implementation change.
 
 ## Next Up
 
-- Scope and write the spec for Unit 5: back the Unit 4 project dialogs with real persistence (Prisma `Project` model + `app/api` routes for create/rename/delete, ownership checks per `architecture-context.md`'s auth/collaboration model) in place of `lib/mock-projects.ts`.
+- Scope and write the spec for Unit 6: `app/api` routes for create/rename/delete (ownership checks per `architecture-context.md`'s auth/collaboration model), and wire `hooks/use-project-manager.ts` to them in place of `lib/mock-projects.ts`.
 - Manually verify the full sign-in/sign-up/sign-out flow, and the Unit 4 dialogs end to end, in a browser with real Clerk test credentials (not done this session — no interactive browser access).
+- Consider running the Next.js security-advisory upgrade (`next upgrade --agent=security`) that `npm run build` surfaced during Unit 5 — not done this session, flagged for the user to decide.
 
 ## Open Questions
 
@@ -84,6 +95,8 @@ Update this file after every meaningful implementation change.
 - `ui-context.md`'s token-to-Tailwind-utility mapping was only given by example (`bg-base`, `text-copy-primary`, etc.), not exhaustively. Resolved the full mapping and documented it directly in `context/ui-context.md` (new table) rather than guessing silently — see that file for the complete CSS-variable-to-utility table.
 - shadcn's semantic tokens (`primary`, `card`, `popover`, `muted`, `destructive`, ...) are mapped onto the same dark palette rather than kept as a separate theme, so generated `components/ui/*` files render correctly themed without ever being edited.
 - Bug found and fixed (post-completion check of `app/globals.css`): `--color-base` had been registered as a generic `@theme` color token for `bg-base`. Tailwind generates `bg-/text-/border-/ring-*` for every `--color-*` key, and `base` collides with Tailwind's own built-in font-size scale key (`text-base` = 1rem). The collision made `.text-base` compile to `color: var(--bg-base)` instead of `font-size: 1rem` — breaking `Input`, `Textarea`, `CardTitle`, and `DialogTitle` (all use `text-base`), making their text both the wrong size and the same near-black as the page background. Fixed by dropping `--color-base` from `@theme` and giving `bg-base` its own `@utility` rule instead, scoped to `background-color` only. Verified via the compiled CSS: `.text-base` now outputs `font-size`/`line-height` again, `.bg-base` still outputs `background-color`.
+
+- This project's Prisma 7 `prisma-client` generator output (`app/generated/prisma/`) has no bare no-argument `PrismaClient` constructor path. Connecting through Prisma Accelerate (`prisma+postgres://` URLs) requires the dedicated `accelerateUrl` constructor option, not just omitting `adapter` — confirmed by reading the generated `internal/prismaNamespace.ts`'s `PrismaClientOptionsWithAccelerateUrl` vs. `PrismaClientOptionsWithAdapter` types, which are mutually exclusive (each sets the other to `never`). `lib/prisma.ts`'s `DATABASE_URL`-prefix branch picks one or the other accordingly.
 
 ## Session Notes
 
