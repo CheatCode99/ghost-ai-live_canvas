@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input"
 interface CreateProjectDialogProps {
   open: boolean
   name: string
-  slug: string
+  roomId: string
+  isValid: boolean
   isLoading: boolean
+  error: string | null
   onNameChange: (value: string) => void
   onOpenChange: (open: boolean) => void
   onSubmit: () => void
@@ -17,13 +19,15 @@ interface CreateProjectDialogProps {
 export function CreateProjectDialog({
   open,
   name,
-  slug,
+  roomId,
+  isValid,
   isLoading,
+  error,
   onNameChange,
   onOpenChange,
   onSubmit,
 }: CreateProjectDialogProps) {
-  const isInvalid = name.trim().length > 0 && slug.length === 0
+  const isInvalid = name.trim().length > 0 && !isValid
 
   return (
     <EditorDialog
@@ -32,7 +36,7 @@ export function CreateProjectDialog({
       title="Create project"
       description="Start a new architecture workspace."
       footer={
-        <Button onClick={onSubmit} disabled={!slug || isLoading}>
+        <Button onClick={onSubmit} disabled={!isValid || isLoading}>
           {isLoading ? "Creating..." : "Create project"}
         </Button>
       }
@@ -61,14 +65,17 @@ export function CreateProjectDialog({
           />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-copy-faint">Slug</span>
-          <p className="truncate text-sm text-copy-secondary">{slug || "—"}</p>
+          <span className="text-xs text-copy-faint">Room ID</span>
+          <p className="truncate text-sm text-copy-secondary">
+            {roomId || "—"}
+          </p>
           {isInvalid ? (
             <p className="text-xs text-error">
               Name must include at least one letter or number.
             </p>
           ) : null}
         </div>
+        {error ? <p className="text-xs text-error">{error}</p> : null}
       </form>
     </EditorDialog>
   )
@@ -78,8 +85,9 @@ interface RenameProjectDialogProps {
   open: boolean
   projectName: string
   name: string
-  slug: string
+  isValid: boolean
   isLoading: boolean
+  error: string | null
   onNameChange: (value: string) => void
   onOpenChange: (open: boolean) => void
   onSubmit: () => void
@@ -89,13 +97,14 @@ export function RenameProjectDialog({
   open,
   projectName,
   name,
-  slug,
+  isValid,
   isLoading,
+  error,
   onNameChange,
   onOpenChange,
   onSubmit,
 }: RenameProjectDialogProps) {
-  const isInvalid = name.trim().length > 0 && slug.length === 0
+  const isInvalid = name.trim().length > 0 && !isValid
 
   return (
     <EditorDialog
@@ -104,7 +113,7 @@ export function RenameProjectDialog({
       title="Rename project"
       description={`Rename "${projectName}".`}
       footer={
-        <Button onClick={onSubmit} disabled={!slug || isLoading}>
+        <Button onClick={onSubmit} disabled={!isValid || isLoading}>
           {isLoading ? "Renaming..." : "Rename"}
         </Button>
       }
@@ -131,6 +140,7 @@ export function RenameProjectDialog({
             Name must include at least one letter or number.
           </p>
         ) : null}
+        {error ? <p className="text-xs text-error">{error}</p> : null}
       </form>
     </EditorDialog>
   )
@@ -140,6 +150,7 @@ interface DeleteProjectDialogProps {
   open: boolean
   projectName: string
   isLoading: boolean
+  error: string | null
   onOpenChange: (open: boolean) => void
   onConfirm: () => void
 }
@@ -148,6 +159,7 @@ export function DeleteProjectDialog({
   open,
   projectName,
   isLoading,
+  error,
   onOpenChange,
   onConfirm,
 }: DeleteProjectDialogProps) {
@@ -166,6 +178,8 @@ export function DeleteProjectDialog({
           {isLoading ? "Deleting..." : "Delete project"}
         </Button>
       }
-    />
+    >
+      {error ? <p className="text-xs text-error">{error}</p> : null}
+    </EditorDialog>
   )
 }
