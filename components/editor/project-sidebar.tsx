@@ -12,6 +12,7 @@ interface ProjectSidebarProps {
   isOpen: boolean
   onClose: () => void
   projects: Project[]
+  activeProjectId?: string
   onCreateProject: () => void
   onRenameProject: (project: Project) => void
   onDeleteProject: (project: Project) => void
@@ -19,16 +20,28 @@ interface ProjectSidebarProps {
 
 function ProjectRow({
   project,
+  isActive,
   onRename,
   onDelete,
 }: {
   project: Project
+  isActive: boolean
   onRename: () => void
   onDelete: () => void
 }) {
   return (
-    <div className="group flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-subtle">
-      <span className="truncate text-sm text-copy-primary">
+    <div
+      className={cn(
+        "group flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-subtle",
+        isActive && "bg-accent-dim"
+      )}
+    >
+      <span
+        className={cn(
+          "truncate text-sm",
+          isActive ? "text-brand" : "text-copy-primary"
+        )}
+      >
         {project.name}
       </span>
       {project.role === "owner" ? (
@@ -58,11 +71,13 @@ function ProjectRow({
 function ProjectList({
   projects,
   emptyLabel,
+  activeProjectId,
   onRenameProject,
   onDeleteProject,
 }: {
   projects: Project[]
   emptyLabel: string
+  activeProjectId?: string
   onRenameProject: (project: Project) => void
   onDeleteProject: (project: Project) => void
 }) {
@@ -81,6 +96,7 @@ function ProjectList({
           <ProjectRow
             key={project.id}
             project={project}
+            isActive={project.id === activeProjectId}
             onRename={() => onRenameProject(project)}
             onDelete={() => onDeleteProject(project)}
           />
@@ -94,6 +110,7 @@ export function ProjectSidebar({
   isOpen,
   onClose,
   projects,
+  activeProjectId,
   onCreateProject,
   onRenameProject,
   onDeleteProject,
@@ -147,6 +164,7 @@ export function ProjectSidebar({
             <ProjectList
               projects={ownedProjects}
               emptyLabel="No projects yet."
+              activeProjectId={activeProjectId}
               onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
             />
@@ -158,6 +176,7 @@ export function ProjectSidebar({
             <ProjectList
               projects={sharedProjects}
               emptyLabel="No shared projects yet."
+              activeProjectId={activeProjectId}
               onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
             />
