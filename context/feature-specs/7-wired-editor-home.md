@@ -55,4 +55,4 @@ connect the hook to sidebar and dialog.
 - create navigate to workspace 
 - rename updates correctly
 - delete refreshes or redirect correctly
-- 'npm run build' passes
+- 'npm run build' passes 

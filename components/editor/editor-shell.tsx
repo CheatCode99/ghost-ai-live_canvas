@@ -15,13 +15,11 @@ import type { Project } from "@/types/project"
 interface EditorShellProps {
   ownedProjects: Project[]
   sharedProjects: Project[]
-  activeProject?: Project | null
 }
 
 export function EditorShell({
   ownedProjects,
   sharedProjects,
-  activeProject = null,
 }: EditorShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const {
@@ -39,7 +37,7 @@ export function EditorShell({
     submitCreate,
     submitRename,
     submitDelete,
-  } = useProjectActions({ activeProjectId: activeProject?.id })
+  } = useProjectActions()
 
   const projects = [...ownedProjects, ...sharedProjects]
 
@@ -57,18 +55,7 @@ export function EditorShell({
         onRenameProject={openRenameDialog}
         onDeleteProject={openDeleteDialog}
       />
-      {activeProject ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
-          <h1 className="text-xl font-medium text-copy-primary">
-            {activeProject.name}
-          </h1>
-          <p className="max-w-sm text-sm text-copy-muted">
-            The canvas workspace isn&apos;t built yet.
-          </p>
-        </div>
-      ) : (
-        <EditorHome onCreateProject={openCreateDialog} />
-      )}
+      <EditorHome onCreateProject={openCreateDialog} />
 
       <CreateProjectDialog
         open={dialog?.type === "create"}

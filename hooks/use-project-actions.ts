@@ -81,7 +81,7 @@ export function useProjectActions({
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify({ name: trimmed, id: roomIdPreview }),
       })
 
       if (!response.ok) {
@@ -92,13 +92,20 @@ export function useProjectActions({
       const { project } = (await response.json()) as { project: { id: string } }
       setDialog(null)
       setName("")
+      // Refresh the current route's data before navigating away: Cache
+      // Components freezes this page's last render via Activity instead of
+      // unmounting it, and only a fresh push/replace re-renders on its own —
+      // browser back restores that frozen snapshot verbatim. Refreshing here
+      // means the new project is already in the frozen copy, so back
+      // navigation shows it without needing a manual reload.
+      router.refresh()
       router.push(`/editor/${project.id}`)
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
       setIsLoading(false)
     }
-  }, [name, isNameValid, router])
+  }, [name, isNameValid, roomIdPreview, router])
 
   const submitRename = useCallback(async () => {
     if (dialog?.type !== "rename") return
