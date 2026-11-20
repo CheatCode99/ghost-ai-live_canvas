@@ -14,6 +14,7 @@ interface ProjectSidebarProps {
   projects: Project[]
   activeProjectId?: string
   onCreateProject: () => void
+  onSelectProject: (project: Project) => void
   onRenameProject: (project: Project) => void
   onDeleteProject: (project: Project) => void
 }
@@ -21,18 +22,29 @@ interface ProjectSidebarProps {
 function ProjectRow({
   project,
   isActive,
+  onSelect,
   onRename,
   onDelete,
 }: {
   project: Project
   isActive: boolean
+  onSelect: () => void
   onRename: () => void
   onDelete: () => void
 }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onSelect()
+        }
+      }}
       className={cn(
-        "group flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-subtle",
+        "group flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-subtle cursor-pointer",
         isActive && "bg-accent-dim"
       )}
     >
@@ -50,7 +62,10 @@ function ProjectRow({
             variant="ghost"
             size="icon-xs"
             aria-label={`Rename ${project.name}`}
-            onClick={onRename}
+            onClick={(event) => {
+              event.stopPropagation()
+              onRename()
+            }}
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
@@ -58,7 +73,10 @@ function ProjectRow({
             variant="ghost"
             size="icon-xs"
             aria-label={`Delete ${project.name}`}
-            onClick={onDelete}
+            onClick={(event) => {
+              event.stopPropagation()
+              onDelete()
+            }}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -72,12 +90,14 @@ function ProjectList({
   projects,
   emptyLabel,
   activeProjectId,
+  onSelectProject,
   onRenameProject,
   onDeleteProject,
 }: {
   projects: Project[]
   emptyLabel: string
   activeProjectId?: string
+  onSelectProject: (project: Project) => void
   onRenameProject: (project: Project) => void
   onDeleteProject: (project: Project) => void
 }) {
@@ -97,6 +117,7 @@ function ProjectList({
             key={project.id}
             project={project}
             isActive={project.id === activeProjectId}
+            onSelect={() => onSelectProject(project)}
             onRename={() => onRenameProject(project)}
             onDelete={() => onDeleteProject(project)}
           />
@@ -112,6 +133,7 @@ export function ProjectSidebar({
   projects,
   activeProjectId,
   onCreateProject,
+  onSelectProject,
   onRenameProject,
   onDeleteProject,
 }: ProjectSidebarProps) {
@@ -165,6 +187,7 @@ export function ProjectSidebar({
               projects={ownedProjects}
               emptyLabel="No projects yet."
               activeProjectId={activeProjectId}
+              onSelectProject={onSelectProject}
               onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
             />
@@ -177,6 +200,7 @@ export function ProjectSidebar({
               projects={sharedProjects}
               emptyLabel="No shared projects yet."
               activeProjectId={activeProjectId}
+              onSelectProject={onSelectProject}
               onRenameProject={onRenameProject}
               onDeleteProject={onDeleteProject}
             />
