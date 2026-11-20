@@ -2,20 +2,21 @@
 
 import type { NodeProps } from "@xyflow/react"
 
+import { NodeShapeVisual } from "@/components/editor/node-shape-visual"
+import { NODE_SHAPE_SIZES } from "@/types/canvas"
 import type { CanvasNode } from "@/types/canvas"
 
-export function CanvasNodeRenderer({ data, width, height }: NodeProps<CanvasNode>) {
+export function CanvasNodeRenderer({ data, width, height, selected }: NodeProps<CanvasNode>) {
+  const defaultSize = NODE_SHAPE_SIZES[data.shape]
+
   return (
-    <div
-      className="flex h-full w-full items-center justify-center rounded-lg border border-surface-border px-3 py-2 text-center text-sm"
-      style={{
-        width: width ?? undefined,
-        height: height ?? undefined,
-        backgroundColor: data.color.fill,
-        color: data.color.text,
-      }}
-    >
-      {data.label}
-    </div>
+    <NodeShapeVisual
+      shape={data.shape}
+      width={width ?? defaultSize.width}
+      height={height ?? defaultSize.height}
+      color={data.color}
+      label={data.label}
+      selected={selected}
+    />
   )
 }

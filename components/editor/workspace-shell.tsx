@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { AiSidebar } from "@/components/editor/ai-sidebar"
@@ -27,6 +28,7 @@ export function WorkspaceShell({
   ownedProjects,
   sharedProjects,
 }: WorkspaceShellProps) {
+  const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false)
   const shareDialog = useShareDialog(project.id)
@@ -71,6 +73,10 @@ export function WorkspaceShell({
           projects={projects}
           activeProjectId={project.id}
           onCreateProject={openCreateDialog}
+          onSelectProject={(selected) => {
+            if (selected.id === project.id) return
+            router.push(`/editor/${selected.id}`)
+          }}
           onRenameProject={openRenameDialog}
           onDeleteProject={openDeleteDialog}
         />

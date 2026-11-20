@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { EditorHome, EditorNavbar } from "@/components/editor/editor-navbar"
@@ -21,6 +22,7 @@ export function EditorShell({
   ownedProjects,
   sharedProjects,
 }: EditorShellProps) {
+  const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const {
     dialog,
@@ -52,6 +54,7 @@ export function EditorShell({
         onClose={() => setIsSidebarOpen(false)}
         projects={projects}
         onCreateProject={openCreateDialog}
+        onSelectProject={(project) => router.push(`/editor/${project.id}`)}
         onRenameProject={openRenameDialog}
         onDeleteProject={openDeleteDialog}
       />
