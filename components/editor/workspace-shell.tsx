@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { AiSidebar } from "@/components/editor/ai-sidebar"
+import { CanvasRoom } from "@/components/editor/canvas-room"
 import {
   CreateProjectDialog,
   DeleteProjectDialog,
@@ -60,8 +61,8 @@ export function WorkspaceShell({
       />
 
       <div className="relative flex-1 overflow-hidden">
-        <main className="flex h-full w-full items-center justify-center bg-base">
-          <p className="text-sm text-copy-muted">Canvas coming soon</p>
+        <main className="h-full w-full bg-base">
+          <CanvasRoom roomId={project.id} />
         </main>
 
         <ProjectSidebar
