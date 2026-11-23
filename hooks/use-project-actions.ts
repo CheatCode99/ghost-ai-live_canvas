@@ -20,6 +20,10 @@ function generateRoomSuffix(): string {
   return Math.random().toString(36).slice(2, 8)
 }
 
+export function pendingTemplateStorageKey(projectId: string): string {
+  return `ghost-ai:pending-template:${projectId}`
+}
+
 async function readErrorMessage(response: Response): Promise<string> {
   const body = await response.json().catch(() => null)
   if (
@@ -42,15 +46,17 @@ export function useProjectActions({
   const [roomSuffix, setRoomSuffix] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
   const slug = slugify(name)
   const isNameValid = slug.length > 0
   const roomIdPreview = isNameValid ? `${slug}-${roomSuffix}` : ""
 
-  const openCreateDialog = useCallback(() => {
+  const openCreateDialog = useCallback((templateId: string | null = null) => {
     setName("")
     setRoomSuffix(generateRoomSuffix())
     setError(null)
+    setSelectedTemplateId(templateId)
     setDialog({ type: "create" })
   }, [])
 
@@ -69,6 +75,7 @@ export function useProjectActions({
     setDialog(null)
     setName("")
     setError(null)
+    setSelectedTemplateId(null)
   }, [])
 
   const submitCreate = useCallback(async () => {
@@ -92,6 +99,12 @@ export function useProjectActions({
       const { project } = (await response.json()) as { project: { id: string } }
       setDialog(null)
       setName("")
+      if (selectedTemplateId) {
+        // sessionStorage, not a URL query param: a query param would make the import
+        // triggerable by anyone who gets a collaborator to open a crafted link, with no
+        // confirmation step. This only fires right after this tab created the project.
+        sessionStorage.setItem(pendingTemplateStorageKey(project.id), selectedTemplateId)
+      }
       // Refresh the current route's data before navigating away: Cache
       // Components freezes this page's last render via Activity instead of
       // unmounting it, and only a fresh push/replace re-renders on its own —
@@ -105,7 +118,7 @@ export function useProjectActions({
     } finally {
       setIsLoading(false)
     }
-  }, [name, isNameValid, roomIdPreview, router])
+  }, [name, isNameValid, roomIdPreview, selectedTemplateId, router])
 
   const submitRename = useCallback(async () => {
     if (dialog?.type !== "rename") return

@@ -12,8 +12,11 @@ import {
 } from "@/components/editor/project-dialogs"
 import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ShareDialog } from "@/components/editor/share-dialog"
+import { CANVAS_TEMPLATES } from "@/components/editor/starter-templates"
+import type { CanvasTemplate, TemplateImportRequest } from "@/components/editor/starter-templates"
+import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal"
 import { WorkspaceNavbar } from "@/components/editor/workspace-navbar"
-import { useProjectActions } from "@/hooks/use-project-actions"
+import { pendingTemplateStorageKey, useProjectActions } from "@/hooks/use-project-actions"
 import { useShareDialog } from "@/hooks/use-share-dialog"
 import type { Project } from "@/types/project"
 
@@ -31,6 +34,16 @@ export function WorkspaceShell({
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false)
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false)
+  const [importRequest, setImportRequest] = useState<TemplateImportRequest | null>(() => {
+    if (typeof window === "undefined") return null
+    const key = pendingTemplateStorageKey(project.id)
+    const templateId = sessionStorage.getItem(key)
+    if (!templateId) return null
+    sessionStorage.removeItem(key)
+    const template = CANVAS_TEMPLATES.find((candidate) => candidate.id === templateId)
+    return template ? { template, requestId: Date.now() } : null
+  })
   const shareDialog = useShareDialog(project.id)
   const {
     dialog,
@@ -51,6 +64,10 @@ export function WorkspaceShell({
 
   const projects = [...ownedProjects, ...sharedProjects]
 
+  function handleImportTemplate(template: CanvasTemplate) {
+    setImportRequest({ template, requestId: Date.now() })
+  }
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-base">
       <WorkspaceNavbar
@@ -60,11 +77,16 @@ export function WorkspaceShell({
         isAiSidebarOpen={isAiSidebarOpen}
         onToggleAiSidebar={() => setIsAiSidebarOpen((open) => !open)}
         onOpenShare={shareDialog.open}
+        onOpenTemplates={() => setIsTemplatesOpen(true)}
       />
 
       <div className="relative flex-1 overflow-hidden">
         <main className="h-full w-full bg-base">
-          <CanvasRoom roomId={project.id} />
+          <CanvasRoom
+            roomId={project.id}
+            importRequest={importRequest}
+            onImportHandled={() => setImportRequest(null)}
+          />
         </main>
 
         <ProjectSidebar
@@ -122,6 +144,12 @@ export function WorkspaceShell({
           if (!open) closeDialog()
         }}
         onConfirm={submitDelete}
+      />
+
+      <StarterTemplatesModal
+        open={isTemplatesOpen}
+        onOpenChange={setIsTemplatesOpen}
+        onImport={handleImportTemplate}
       />
 
       <ShareDialog
