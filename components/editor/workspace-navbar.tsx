@@ -1,7 +1,7 @@
 "use client"
 
 import { UserButton } from "@clerk/nextjs"
-import { PanelLeftClose, PanelLeftOpen, Share2, Sparkles } from "lucide-react"
+import { LayoutTemplate, PanelLeftClose, PanelLeftOpen, Share2, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -12,6 +12,7 @@ interface WorkspaceNavbarProps {
   isAiSidebarOpen: boolean
   onToggleAiSidebar: () => void
   onOpenShare: () => void
+  onOpenTemplates: () => void
 }
 
 export function WorkspaceNavbar({
@@ -21,6 +22,7 @@ export function WorkspaceNavbar({
   isAiSidebarOpen,
   onToggleAiSidebar,
   onOpenShare,
+  onOpenTemplates,
 }: WorkspaceNavbarProps) {
   return (
     <nav className="relative z-50 grid h-14 w-full shrink-0 grid-cols-3 items-center border-b border-surface-border-subtle bg-surface px-4">
@@ -44,6 +46,15 @@ export function WorkspaceNavbar({
         </span>
       </div>
       <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={onOpenTemplates}
+        >
+          <LayoutTemplate className="h-4 w-4" />
+          Templates
+        </Button>
         <Button
           variant="outline"
           size="sm"

@@ -58,7 +58,7 @@ export function EditorShell({
         onRenameProject={openRenameDialog}
         onDeleteProject={openDeleteDialog}
       />
-      <EditorHome onCreateProject={openCreateDialog} />
+      <EditorHome onCreateProject={(templateId) => openCreateDialog(templateId)} />
 
       <CreateProjectDialog
         open={dialog?.type === "create"}

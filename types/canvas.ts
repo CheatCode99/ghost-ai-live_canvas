@@ -46,3 +46,6 @@ export interface ShapeDragPayload {
   width: number
   height: number
 }
+
+export const MIN_NODE_WIDTH = 40
+export const MIN_NODE_HEIGHT = 40

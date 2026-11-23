@@ -8,9 +8,12 @@ import {
 import { ErrorBoundary } from "react-error-boundary"
 
 import { CanvasFlow } from "@/components/editor/canvas-flow"
+import type { TemplateImportRequest } from "@/components/editor/starter-templates"
 
 interface CanvasRoomProps {
   roomId: string
+  importRequest?: TemplateImportRequest | null
+  onImportHandled?: () => void
 }
 
 function CanvasLoading() {
@@ -31,13 +34,13 @@ function CanvasError() {
   )
 }
 
-export function CanvasRoom({ roomId }: CanvasRoomProps) {
+export function CanvasRoom({ roomId, importRequest, onImportHandled }: CanvasRoomProps) {
   return (
     <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
       <RoomProvider id={roomId} initialPresence={{ cursor: null, isThinking: false }}>
         <ErrorBoundary FallbackComponent={CanvasError}>
           <ClientSideSuspense fallback={<CanvasLoading />}>
-            <CanvasFlow />
+            <CanvasFlow importRequest={importRequest} onImportHandled={onImportHandled} />
           </ClientSideSuspense>
         </ErrorBoundary>
       </RoomProvider>
