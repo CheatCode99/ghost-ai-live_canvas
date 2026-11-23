@@ -12,7 +12,7 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  StepEdge,
+  SmoothStepEdge,
   useReactFlow,
 } from "@xyflow/react"
 
@@ -29,8 +29,9 @@ import "@xyflow/react/dist/style.css"
 import "@liveblocks/react-flow/styles.css"
 
 const nodeTypes = { canvasNode: CanvasNodeRenderer }
-// Covers both explicitly-typed ("canvasEdge") and untyped (user-drawn) edges with the same straight, cornered routing.
-const edgeTypes = { canvasEdge: StepEdge, default: StepEdge }
+// Covers both explicitly-typed ("canvasEdge") and untyped (user-drawn) edges with the same routing:
+// straight segments with a slightly rounded corner (SmoothStepEdge's default 5px borderRadius).
+const edgeTypes = { canvasEdge: SmoothStepEdge, default: SmoothStepEdge }
 
 let nodeIdCounter = 0
 

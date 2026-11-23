@@ -92,7 +92,7 @@ Default node color: `#1F1F1F` with `#EDEDED` text.
 
 ### Edge Style
 
-Straight, cornered (step) path — no curves — with an arrow marker. Default edge color: `#f8fafc`. Stroke width is thin — edges are visually secondary to nodes.
+Straight, cornered (smooth-step) path — straight segments with a slightly rounded corner where they turn — with an arrow marker. Default edge color: `#f8fafc`. Stroke width is thin — edges are visually secondary to nodes.
 
 ### Node Shapes
 
