@@ -16,6 +16,7 @@ import { CANVAS_TEMPLATES } from "@/components/editor/starter-templates"
 import type { CanvasTemplate, TemplateImportRequest } from "@/components/editor/starter-templates"
 import { StarterTemplatesModal } from "@/components/editor/starter-templates-modal"
 import { WorkspaceNavbar } from "@/components/editor/workspace-navbar"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 import { pendingTemplateStorageKey, useProjectActions } from "@/hooks/use-project-actions"
 import { useShareDialog } from "@/hooks/use-share-dialog"
 import type { Project } from "@/types/project"
@@ -35,6 +36,8 @@ export function WorkspaceShell({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false)
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
+  const [manualSaveToken, setManualSaveToken] = useState(0)
   const [importRequest, setImportRequest] = useState<TemplateImportRequest | null>(() => {
     if (typeof window === "undefined") return null
     const key = pendingTemplateStorageKey(project.id)
@@ -78,6 +81,8 @@ export function WorkspaceShell({
         onToggleAiSidebar={() => setIsAiSidebarOpen((open) => !open)}
         onOpenShare={shareDialog.open}
         onOpenTemplates={() => setIsTemplatesOpen(true)}
+        saveStatus={saveStatus}
+        onManualSave={() => setManualSaveToken((token) => token + 1)}
       />
 
       <div className="relative flex-1 overflow-hidden">
@@ -86,6 +91,8 @@ export function WorkspaceShell({
             roomId={project.id}
             importRequest={importRequest}
             onImportHandled={() => setImportRequest(null)}
+            onSaveStatusChange={setSaveStatus}
+            manualSaveToken={manualSaveToken}
           />
         </main>
 

@@ -9,11 +9,14 @@ import { ErrorBoundary } from "react-error-boundary"
 
 import { CanvasFlow } from "@/components/editor/canvas-flow"
 import type { TemplateImportRequest } from "@/components/editor/starter-templates"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 
 interface CanvasRoomProps {
   roomId: string
   importRequest?: TemplateImportRequest | null
   onImportHandled?: () => void
+  onSaveStatusChange?: (status: SaveStatus) => void
+  manualSaveToken?: number
 }
 
 function CanvasLoading() {
@@ -34,13 +37,25 @@ function CanvasError() {
   )
 }
 
-export function CanvasRoom({ roomId, importRequest, onImportHandled }: CanvasRoomProps) {
+export function CanvasRoom({
+  roomId,
+  importRequest,
+  onImportHandled,
+  onSaveStatusChange,
+  manualSaveToken,
+}: CanvasRoomProps) {
   return (
     <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-      <RoomProvider id={roomId} initialPresence={{ cursor: null, isThinking: false }}>
+      <RoomProvider id={roomId} initialPresence={{ cursor: null, thinking: false }}>
         <ErrorBoundary FallbackComponent={CanvasError}>
           <ClientSideSuspense fallback={<CanvasLoading />}>
-            <CanvasFlow importRequest={importRequest} onImportHandled={onImportHandled} />
+            <CanvasFlow
+              projectId={roomId}
+              importRequest={importRequest}
+              onImportHandled={onImportHandled}
+              onSaveStatusChange={onSaveStatusChange}
+              manualSaveToken={manualSaveToken}
+            />
           </ClientSideSuspense>
         </ErrorBoundary>
       </RoomProvider>
