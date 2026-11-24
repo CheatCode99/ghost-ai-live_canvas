@@ -94,6 +94,8 @@ Default node color: `#1F1F1F` with `#EDEDED` text.
 
 Straight, cornered (smooth-step) path — straight segments with a slightly rounded corner where they turn — with an arrow marker. Default edge color: `#f8fafc`. Stroke width is thin — edges are visually secondary to nodes.
 
+Each edge carries an optional text label, editable in place (double-click to edit, `Enter`/`Escape`/blur to commit) and rendered at the midpoint of the path. Unlabeled edges show a faint dashed "Label" placeholder, `text-copy-faint`, in the same spot — mirrors the always-visible "Label" placeholder convention nodes already use for discoverability.
+
 ### Node Shapes
 
 6 supported shapes, defined in `types/canvas.ts` as `NODE_SHAPES`. Complex shapes (diamond, hexagon, cylinder) are rendered as inline SVGs rather than CSS borders.
@@ -112,6 +114,12 @@ Small white circular handles, hidden by default, revealed on node hover. Appear 
 ### Canvas Background
 
 React Flow `<Background>` component. Canvas sits on the base background color.
+
+### Presence
+
+- Top-right of the canvas view (not the navbar): current user's existing Clerk `UserButton`, followed by up to 5 overlapping collaborator avatars (`+N` chip beyond that), separated by a thin divider shown only when at least one collaborator is present.
+- Collaborator avatars are display-only (profile photo or initial fallback), sized to match the `UserButton`, with a subtle ring for readability on the dark canvas.
+- Other participants' cursors render as a small colored pointer with a name badge, colored to match that participant's Liveblocks presence color (`lib/liveblocks.ts`'s `getCursorColorForUser`).
 
 ## Component Library
 

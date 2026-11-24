@@ -3,7 +3,9 @@
 import { UserButton } from "@clerk/nextjs"
 import { LayoutTemplate, PanelLeftClose, PanelLeftOpen, Share2, Sparkles } from "lucide-react"
 
+import { SaveStatusIndicator } from "@/components/editor/save-status-indicator"
 import { Button } from "@/components/ui/button"
+import type { SaveStatus } from "@/hooks/use-canvas-autosave"
 
 interface WorkspaceNavbarProps {
   projectName: string
@@ -13,6 +15,8 @@ interface WorkspaceNavbarProps {
   onToggleAiSidebar: () => void
   onOpenShare: () => void
   onOpenTemplates: () => void
+  saveStatus: SaveStatus
+  onManualSave: () => void
 }
 
 export function WorkspaceNavbar({
@@ -23,6 +27,8 @@ export function WorkspaceNavbar({
   onToggleAiSidebar,
   onOpenShare,
   onOpenTemplates,
+  saveStatus,
+  onManualSave,
 }: WorkspaceNavbarProps) {
   return (
     <nav className="relative z-50 grid h-14 w-full shrink-0 grid-cols-3 items-center border-b border-surface-border-subtle bg-surface px-4">
@@ -46,6 +52,7 @@ export function WorkspaceNavbar({
         </span>
       </div>
       <div className="flex items-center justify-end gap-2">
+        <SaveStatusIndicator status={saveStatus} onSave={onManualSave} />
         <Button
           variant="outline"
           size="sm"

@@ -29,8 +29,12 @@ export interface CanvasNodeData extends Record<string, unknown> {
   shape: NodeShape
 }
 
+export interface CanvasEdgeData extends Record<string, unknown> {
+  label?: string
+}
+
 export type CanvasNode = Node<CanvasNodeData, "canvasNode">
-export type CanvasEdge = Edge<Record<string, never>, "canvasEdge">
+export type CanvasEdge = Edge<CanvasEdgeData, "canvasEdge">
 
 export const NODE_SHAPE_SIZES: Record<NodeShape, { width: number; height: number }> = {
   rectangle: { width: 160, height: 80 },
